@@ -1,0 +1,111 @@
+package org.sukey.android.cascade;
+
+import org.sukey.android.cascade.R;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.IBinder;
+import android.os.Parcelable;
+
+public class CascadeService extends Service {
+	protected NotificationManager nm;
+	protected Notification notification;
+	protected PendingIntent notificationContentIntent;
+
+	@Override
+	public IBinder onBind(Intent arg0) {
+		return null;
+	}
+
+	@Override
+	public void onStart(Intent intent, int startId) {
+		handleStart(intent, startId);
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		handleStart(intent, startId);
+		return START_REDELIVER_INTENT;
+	}
+
+	protected void updateNotification(int cur, int max) {
+		String title = getResources().getString(R.string.app_name);
+		String text = getResources().getString(R.string.notification_cascading_message,
+				new Object[] { (Integer) cur, (Integer) max });
+		notification.setLatestEventInfo(getApplicationContext(), title, text,
+				notificationContentIntent);
+		notification.number = max - cur;
+		nm.notify(0, notification);
+	}
+
+	protected void handleStart(Intent intent, int startId) {
+		// actually do some work
+
+		Parcelable[] p_contacts = intent.getParcelableArrayExtra("org.sukey.cascade.contacts");
+		Contact[] contacts = new Contact[p_contacts.length];
+		for (int i=0; i<p_contacts.length; ++i) {
+			contacts[i] = (Contact)p_contacts[i];
+		}
+
+		nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		new SendSmsTask().execute(contacts);
+	}
+
+	public static class ProgressMessage {
+		// TODO
+	}
+
+	public class SendSmsTask extends
+			AsyncTask<Contact[], ProgressMessage, Void> {
+
+		@Override
+		protected Void doInBackground(Contact[]... contactArgs) {
+			// TODO work
+			if (contactArgs.length != 1) {
+				throw new IllegalArgumentException("Expecting exactly one argument: an array of contacts");
+			}
+			Contact[] contacts = contactArgs[0];
+			int length = contacts.length;
+			for (int i = 0; i < length; ++i) {
+				updateNotification(i+1, length);
+				try {
+					Thread.sleep(7500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+
+			notification = new Notification(R.drawable.icon,
+					"Cascading messages", System.currentTimeMillis());
+			notification.flags |= Notification.FLAG_ONGOING_EVENT
+					| Notification.FLAG_NO_CLEAR;
+			Intent intent = new Intent(CascadeService.this, CascadeService.class);
+			notification.contentIntent = notificationContentIntent = PendingIntent.getBroadcast(CascadeService.this, 0, intent, 0);
+		}
+
+		@Override
+		protected void onProgressUpdate(ProgressMessage... values) {
+			super.onProgressUpdate(values);
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			nm.cancel(0);
+			CascadeService.this.stopSelf();
+		}
+
+	}
+
+}
