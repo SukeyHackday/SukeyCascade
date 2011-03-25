@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 	<CheckBoxPreference android:key="enabled"
-		android:defaultValue="true" android:disableDependentsState="false"
+		android:defaultValue="false" android:disableDependentsState="false"
 		android:title="@string/pref_enabled" android:summaryOff="@string/prefsumm_enabled_no"
 		android:summaryOn="@string/prefsumm_enabled_yes" />
 	<PreferenceCategory android:title="@string/prefgrp_buddy_list">
