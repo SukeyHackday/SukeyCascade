@@ -9,6 +9,7 @@
 			android:title="@string/pref_buddy_list" android:key="buddy_list"
 			android:dependency="enabled" />
 	</PreferenceCategory>
+	<!--
 	<PreferenceCategory android:title="@string/prefgrp_text_restrictions">
 		<CheckBoxPreference android:dependency="enabled"
 			android:key="restrict_day" android:title="@string/pref_restrict_day"
@@ -26,4 +27,5 @@
 		android:persistent="false" android:selectable="true"
 		android:summary="Send a test message to all buddies" android:enabled="true"
 		android:dependency="enabled" />
+		-->
 </PreferenceScreen>

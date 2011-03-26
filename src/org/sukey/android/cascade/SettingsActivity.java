@@ -29,10 +29,12 @@ public class SettingsActivity extends PreferenceActivity implements
 		mSelectContacts.setOnPreferenceClickListener(this);
 
 		mTestService = (Preference) findPreference("test");
-		mTestService.setOnPreferenceClickListener(this);
+		if (mTestService != null)
+			mTestService.setOnPreferenceClickListener(this);
 
 		mDoIt = (Preference) findPreference("do_it");
-		mDoIt.setOnPreferenceClickListener(this);
+		if (mDoIt != null)
+			mDoIt.setOnPreferenceClickListener(this);
 	}
 
 	public boolean onPreferenceClick(Preference preference) {
