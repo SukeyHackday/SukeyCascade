@@ -1,27 +1,27 @@
 package org.sukey.android.cascade;
 
-import android.content.res.Resources;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.provider.ContactsContract;
 
 public final class Contact implements Parcelable {
 	protected String mId;
 	protected int mType;
 	protected String mName;
 	protected String mNumber;
+	protected String mLabel;
 	protected boolean mSelected;
 
-	public Contact(String id, String name, int type, String number) {
-		this(id, name, type, number, false);
+	public Contact(String id, String name, int type, String number, String label) {
+		this(id, name, type, number, label, false);
 	}
 
 	public Contact(String id, String name, int type, String number,
-			boolean selected) {
+			String label, boolean selected) {
 		mId = id;
 		mName = name;
 		mType = type;
 		mNumber = number;
+		mLabel = label;
 		mSelected = selected;
 	}
 
@@ -46,9 +46,7 @@ public final class Contact implements Parcelable {
 	}
 
 	public String getLabel() {
-		return Resources.getSystem().getString(
-				ContactsContract.CommonDataKinds.Phone
-						.getTypeLabelResource(mType));
+		return mLabel;
 	}
 
 	public int getType() {

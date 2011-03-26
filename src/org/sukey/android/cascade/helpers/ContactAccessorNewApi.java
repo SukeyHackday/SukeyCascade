@@ -8,6 +8,7 @@ import org.sukey.android.cascade.Contact;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
@@ -45,7 +46,11 @@ public class ContactAccessorNewApi extends ContactAccessor {
 						.getInt(pCur
 								.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
 
-				Contact contact = new Contact(id, name, type, number);
+				String label = Resources.getSystem().getString(
+						ContactsContract.CommonDataKinds.Phone
+								.getTypeLabelResource(type));
+
+				Contact contact = new Contact(id, name, type, number, label);
 				contacts.add(contact);
 			}
 			pCur.close();

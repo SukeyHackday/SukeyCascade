@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.provider.Contacts.People;
+import android.provider.Contacts.Phones;
 //import android.util.Log;
 
 @SuppressWarnings("deprecation")
@@ -28,14 +29,13 @@ public class ContactAccessorOldApi extends ContactAccessor {
 						People.NAME, People.TYPE, People.NUMBER }, query, null,
 						People.DEFAULT_SORT_ORDER);
 		while (managedCursor.moveToNext()) {
-			Contact contact = new Contact(managedCursor.getString(managedCursor
-					.getColumnIndexOrThrow(People._ID)),
-					managedCursor.getString(managedCursor
-							.getColumnIndexOrThrow(People.NAME)), managedCursor
-							.getInt(managedCursor
-									.getColumnIndexOrThrow(People.TYPE)),
-					managedCursor.getString(managedCursor
-							.getColumnIndexOrThrow(People.NUMBER)));
+			String id = managedCursor.getString(managedCursor.getColumnIndexOrThrow(People._ID));
+			String name = managedCursor.getString(managedCursor.getColumnIndexOrThrow(People.NAME));
+			int type = managedCursor.getInt(managedCursor.getColumnIndexOrThrow(People.TYPE));
+			String number = managedCursor.getString(managedCursor.getColumnIndexOrThrow(People.NUMBER));
+			String label = (String) Phones.getDisplayLabel(activity, type, "Other");
+
+			Contact contact = new Contact(id, name, type, number, label);
 			contacts.add(contact);
 		}
 
