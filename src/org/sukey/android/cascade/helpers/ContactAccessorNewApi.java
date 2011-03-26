@@ -5,13 +5,14 @@ import java.util.List;
 
 import org.sukey.android.cascade.Contact;
 
-import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
+
 //import android.util.Log;
 
 public class ContactAccessorNewApi extends ContactAccessor {
@@ -22,17 +23,18 @@ public class ContactAccessorNewApi extends ContactAccessor {
 	}
 
 	@Override
-	public List<Contact> getContactList(Activity activity) {
+	protected List<Contact> getContactsSelection(Context context,
+			String selection, String[] selectionArgs) {
+
 		List<Contact> contacts = new ArrayList<Contact>();
 
-		ContentResolver cr = activity.getContentResolver();
-		Cursor managedCursor = activity.managedQuery(Contacts.CONTENT_URI,
-				null, Contacts.HAS_PHONE_NUMBER + " = 1", null,
-				Contacts.DISPLAY_NAME);
-		while (managedCursor.moveToNext()) {
-			String id = managedCursor.getString(managedCursor
+		ContentResolver cr = context.getContentResolver();
+		Cursor cur = cr.query(Contacts.CONTENT_URI,
+				null, selection, selectionArgs, Contacts.DISPLAY_NAME);
+		while (cur.moveToNext()) {
+			String id = cur.getString(cur
 					.getColumnIndex(Contacts._ID));
-			String name = managedCursor.getString(managedCursor
+			String name = cur.getString(cur
 					.getColumnIndex(Contacts.DISPLAY_NAME));
 			Cursor pCur = cr.query(
 					ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
@@ -55,8 +57,19 @@ public class ContactAccessorNewApi extends ContactAccessor {
 			}
 			pCur.close();
 		}
-		managedCursor.close();
+		cur.close();
 
 		return contacts;
+	}
+
+	@Override
+	public List<Contact> getContactList(Context context) {
+		return getContactsSelection(context, Contacts.HAS_PHONE_NUMBER
+				+ " = 1", null);
+	}
+
+	@Override
+	public Contact[] getContactsFromIds(Context context, String[] ids) {
+		return null;
 	}
 }

@@ -5,11 +5,13 @@ import java.util.List;
 
 import org.sukey.android.cascade.Contact;
 
-import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.provider.Contacts.People;
 import android.provider.Contacts.Phones;
+
 //import android.util.Log;
 
 @SuppressWarnings("deprecation")
@@ -21,25 +23,44 @@ public class ContactAccessorOldApi extends ContactAccessor {
 	}
 
 	@Override
-	public List<Contact> getContactList(Activity activity) {
+	protected List<Contact> getContactsSelection(Context context,
+			String selection, String[] selectionArgs) {
+
+		ContentResolver cr = context.getContentResolver();
 		List<Contact> contacts = new ArrayList<Contact>();
-		String query = People.NUMBER + " is not null";;
-		Cursor managedCursor = activity
-				.managedQuery(People.CONTENT_URI, new String[] { People._ID,
-						People.NAME, People.TYPE, People.NUMBER }, query, null,
-						People.DEFAULT_SORT_ORDER);
-		while (managedCursor.moveToNext()) {
-			String id = managedCursor.getString(managedCursor.getColumnIndexOrThrow(People._ID));
-			String name = managedCursor.getString(managedCursor.getColumnIndexOrThrow(People.NAME));
-			int type = managedCursor.getInt(managedCursor.getColumnIndexOrThrow(People.TYPE));
-			String number = managedCursor.getString(managedCursor.getColumnIndexOrThrow(People.NUMBER));
-			String label = (String) Phones.getDisplayLabel(activity, type, "Other");
+		Cursor cur = cr.query(People.CONTENT_URI,
+				new String[] { People._ID, People.NAME, People.TYPE,
+						People.NUMBER }, selection, selectionArgs,
+				People.DEFAULT_SORT_ORDER);
+		while (cur.moveToNext()) {
+			String id = cur.getString(cur
+					.getColumnIndexOrThrow(People._ID));
+			String name = cur.getString(cur
+					.getColumnIndexOrThrow(People.NAME));
+			int type = cur.getInt(cur
+					.getColumnIndexOrThrow(People.TYPE));
+			String number = cur.getString(cur
+					.getColumnIndexOrThrow(People.NUMBER));
+			String label = (String) Phones.getDisplayLabel(context, type,
+					"Other");
 
 			Contact contact = new Contact(id, name, type, number, label);
 			contacts.add(contact);
 		}
+		cur.close();
 
 		return contacts;
+	}
+
+	@Override
+	public List<Contact> getContactList(Context context) {
+		return getContactsSelection(context, People.NUMBER + " is not null",
+				null);
+	}
+
+	@Override
+	public Contact[] getContactsFromIds(Context context, String[] ids) {
+		return getContactsSelection(context, People._ID + " IN " + createInClause(ids), null).toArray(new Contact[]{});
 	}
 
 }

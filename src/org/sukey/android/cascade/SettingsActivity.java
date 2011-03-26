@@ -2,6 +2,7 @@ package org.sukey.android.cascade;
 
 import org.sukey.android.cascade.R;
 import org.sukey.android.cascade.helpers.ContactAccessor;
+import org.sukey.android.cascade.helpers.ContactStorage;
 
 import android.content.Intent;
 import android.os.Bundle;

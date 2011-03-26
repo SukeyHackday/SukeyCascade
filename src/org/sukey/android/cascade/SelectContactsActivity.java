@@ -1,12 +1,16 @@
 package org.sukey.android.cascade;
 
 import java.util.List;
+import java.util.Set;
 
 import org.sukey.android.cascade.R;
 import org.sukey.android.cascade.helpers.ContactAccessor;
+import org.sukey.android.cascade.helpers.ContactStorage;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +21,7 @@ import android.widget.TextView;
 
 public class SelectContactsActivity extends ListActivity {
 	ContactAccessor mContactAccessor = ContactAccessor.getInstance();
+	Set<String> contactIDs;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -24,6 +29,46 @@ public class SelectContactsActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		populateContactsLayout();
+		contactIDs = ContactStorage.getContactIds(this);
+	}
+
+	protected class LoadContactsTask extends
+			AsyncTask<Void, Void, ArrayAdapter<Contact>> {
+		protected ProgressDialog mProgress;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mProgress = ProgressDialog.show(SelectContactsActivity.this, null,
+					getString(R.string.loading_contacts), true, false);
+		}
+
+		@Override
+		protected ArrayAdapter<Contact> doInBackground(Void... params) {
+			List<Contact> contacts = mContactAccessor
+					.getContactList(SelectContactsActivity.this);
+			if (contactIDs.size() > 0) {
+				for (Contact c : contacts) {
+					c.setSelected(contactIDs.contains(c.getId()));
+				}
+			}
+			return new ContactItemArrayAdapter(SelectContactsActivity.this,
+					R.layout.select_contacts, contacts);
+		}
+
+		@Override
+		protected void onPostExecute(ArrayAdapter<Contact> result) {
+			super.onPostExecute(result);
+			setListAdapter(result);
+			mProgress.dismiss();
+		}
+
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		ContactStorage.putContactIds(this, contactIDs);
 	}
 
 	/** 
@@ -43,10 +88,7 @@ public class SelectContactsActivity extends ListActivity {
 	 * @param nameClause
 	 */
 	private void queryContacts() {
-		List<Contact> contacts = mContactAccessor.getContactList(this);
-		ArrayAdapter<Contact> arrayAdapter = new ContactItemArrayAdapter(this,
-				R.layout.select_contacts, contacts);
-		setListAdapter(arrayAdapter);
+		new LoadContactsTask().execute();
 	}
 
 	@Override
@@ -57,7 +99,11 @@ public class SelectContactsActivity extends ListActivity {
 		contact.setSelected(!contact.getSelected());
 		l.setItemChecked(position, contact.getSelected());
 		checkBox.setChecked(l.isItemChecked(position));
-		l.setItemChecked(position, checkBox.isChecked());
+		if (l.isItemChecked(position)) {
+			contactIDs.add(contact.getId());
+		} else {
+			contactIDs.remove(contact.getId());
+		}
 	}
 
 	private static class ContactItemArrayAdapter extends ArrayAdapter<Contact> {
