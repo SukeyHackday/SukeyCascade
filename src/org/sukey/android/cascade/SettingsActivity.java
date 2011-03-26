@@ -1,6 +1,5 @@
 package org.sukey.android.cascade;
 
-import org.sukey.android.cascade.R;
 import org.sukey.android.cascade.helpers.ContactAccessor;
 import org.sukey.android.cascade.helpers.ContactStorage;
 
@@ -25,7 +24,7 @@ public class SettingsActivity extends PreferenceActivity implements
 
 		mEnabled = (Preference) findPreference("enabled");
 		mEnabled.setOnPreferenceClickListener(this);
-		
+
 		mSelectContacts = (Preference) findPreference("buddy_list");
 		mSelectContacts.setOnPreferenceClickListener(this);
 
@@ -43,25 +42,25 @@ public class SettingsActivity extends PreferenceActivity implements
 			startActivity(new Intent(this, SelectContactsActivity.class));
 			return true;
 		} else if (preference == mTestService) {
-			Contact[] contacts = new Contact[]{
-				new Contact("1234", "Test contact 1", 1, "5554", "Label1"),
-				new Contact("7413", "Test contact 2", 2, "5556", "Label2"),
-				new Contact("4789", "Test contact 3", 2, "5560", "Label3")
-			};
+			Contact[] contacts = new Contact[] {
+					new Contact("1234", "Test contact 1", 1, "5554", "Label1"),
+					new Contact("7413", "Test contact 2", 2, "5556", "Label2"),
+					new Contact("4789", "Test contact 3", 2, "5560", "Label3") };
 
 			Intent intent = new Intent(this, CascadeService.class);
 			intent.setAction(CascadeService.ACTION_BROADCAST);
-			intent.putExtra(CascadeService.EXTRA_MESSAGE, "This is a test from Sukey.");
+			intent.putExtra(CascadeService.EXTRA_MESSAGE,
+					"This is a test from Sukey.");
 			intent.putExtra(CascadeService.EXTRA_CONTACTS, contacts);
 			startService(intent);
 			return true;
 		} else if (preference == mDoIt) {
-			// TODO: Fetch contacts
 			Contact[] contacts = ContactStorage.getContacts(this);
 
 			Intent intent = new Intent(this, CascadeService.class);
 			intent.setAction(CascadeService.ACTION_BROADCAST);
-			intent.putExtra(CascadeService.EXTRA_MESSAGE, "This is a test from Sukey Cascade.");
+			intent.putExtra(CascadeService.EXTRA_MESSAGE,
+					"This is a test from Sukey Cascade.");
 			intent.putExtra(CascadeService.EXTRA_CONTACTS, contacts);
 			startService(intent);
 			return true;

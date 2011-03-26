@@ -1,7 +1,5 @@
 package org.sukey.android.cascade;
 
-import org.sukey.android.cascade.R;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -59,6 +57,7 @@ public class CascadeService extends Service {
 
 		Parcelable[] p_contacts = intent
 				.getParcelableArrayExtra(EXTRA_CONTACTS);
+
 		Contact[] contacts = new Contact[p_contacts.length];
 		for (int i = 0; i < p_contacts.length; ++i) {
 			contacts[i] = (Contact) p_contacts[i];
