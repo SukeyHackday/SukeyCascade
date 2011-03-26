@@ -12,8 +12,10 @@ import android.preference.Preference.OnPreferenceClickListener;
 
 public class SettingsActivity extends PreferenceActivity implements
 		OnPreferenceClickListener {
+	Preference mEnabled;
 	Preference mSelectContacts;
 	Preference mTestService;
+	Preference mDoIt;
 	ContactAccessor mContactAccessor = ContactAccessor.getInstance();
 
 	@Override
@@ -21,15 +23,23 @@ public class SettingsActivity extends PreferenceActivity implements
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.prefs);
 
+		mEnabled = (Preference) findPreference("enabled");
+		mEnabled.setOnPreferenceClickListener(this);
+		
 		mSelectContacts = (Preference) findPreference("buddy_list");
 		mSelectContacts.setOnPreferenceClickListener(this);
 
 		mTestService = (Preference) findPreference("test");
 		mTestService.setOnPreferenceClickListener(this);
+
+		mDoIt = (Preference) findPreference("do_it");
+		mDoIt.setOnPreferenceClickListener(this);
 	}
 
 	public boolean onPreferenceClick(Preference preference) {
-		if (preference == mSelectContacts) {
+		if (preference == mEnabled) {
+			return true;
+		} else if (preference == mSelectContacts) {
 			startActivity(new Intent(this, SelectContactsActivity.class));
 			return true;
 		} else if (preference == mTestService) {
@@ -38,6 +48,16 @@ public class SettingsActivity extends PreferenceActivity implements
 				new Contact("7413", "Test contact 2", 2, "5556", "Label2"),
 				new Contact("4789", "Test contact 3", 2, "5560", "Label3")
 			};
+
+			Intent intent = new Intent(this, CascadeService.class);
+			intent.setAction(CascadeService.ACTION_BROADCAST);
+			intent.putExtra(CascadeService.EXTRA_MESSAGE, "This is a test from Sukey.");
+			intent.putExtra(CascadeService.EXTRA_CONTACTS, contacts);
+			startService(intent);
+			return true;
+		} else if (preference == mDoIt) {
+			// TODO: Fetch contacts
+			Contact[] contacts = ContactStorage.getContacts(this);
 
 			Intent intent = new Intent(this, CascadeService.class);
 			intent.setAction(CascadeService.ACTION_BROADCAST);

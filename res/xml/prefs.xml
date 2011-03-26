@@ -22,4 +22,8 @@
 		android:persistent="false" android:selectable="true"
 		android:summary="Send a test message to the service" android:enabled="true"
 		android:dependency="enabled" />
+	<Preference android:key="do_it" android:title="Do it!"
+		android:persistent="false" android:selectable="true"
+		android:summary="Send a test message to all buddies" android:enabled="true"
+		android:dependency="enabled" />
 </PreferenceScreen>
