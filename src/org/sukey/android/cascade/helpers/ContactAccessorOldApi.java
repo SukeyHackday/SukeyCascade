@@ -12,8 +12,6 @@ import android.database.Cursor;
 import android.provider.Contacts.People;
 import android.provider.Contacts.Phones;
 
-//import android.util.Log;
-
 @SuppressWarnings("deprecation")
 public class ContactAccessorOldApi extends ContactAccessor {
 
@@ -28,17 +26,13 @@ public class ContactAccessorOldApi extends ContactAccessor {
 
 		ContentResolver cr = context.getContentResolver();
 		List<Contact> contacts = new ArrayList<Contact>();
-		Cursor cur = cr.query(People.CONTENT_URI,
-				new String[] { People._ID, People.NAME, People.TYPE,
-						People.NUMBER }, selection, selectionArgs,
-				People.DEFAULT_SORT_ORDER);
+		Cursor cur = cr.query(People.CONTENT_URI, new String[] { People._ID,
+				People.NAME, People.TYPE, People.NUMBER }, selection,
+				selectionArgs, People.DEFAULT_SORT_ORDER);
 		while (cur.moveToNext()) {
-			String id = cur.getString(cur
-					.getColumnIndexOrThrow(People._ID));
-			String name = cur.getString(cur
-					.getColumnIndexOrThrow(People.NAME));
-			int type = cur.getInt(cur
-					.getColumnIndexOrThrow(People.TYPE));
+			String id = cur.getString(cur.getColumnIndexOrThrow(People._ID));
+			String name = cur.getString(cur.getColumnIndexOrThrow(People.NAME));
+			int type = cur.getInt(cur.getColumnIndexOrThrow(People.TYPE));
 			String number = cur.getString(cur
 					.getColumnIndexOrThrow(People.NUMBER));
 			String label = (String) Phones.getDisplayLabel(context, type,
@@ -60,7 +54,10 @@ public class ContactAccessorOldApi extends ContactAccessor {
 
 	@Override
 	public Contact[] getContactsFromIds(Context context, String[] ids) {
-		return getContactsSelection(context, People._ID + " IN " + createInClause(ids), null).toArray(new Contact[]{});
+		return getContactsSelection(
+				context,
+				People.NUMBER + " is not null AND " + People._ID + " IN "
+						+ createInClause(ids), null).toArray(new Contact[] {});
 	}
 
 }

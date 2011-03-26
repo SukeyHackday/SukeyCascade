@@ -13,8 +13,6 @@ import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 
-//import android.util.Log;
-
 public class ContactAccessorNewApi extends ContactAccessor {
 
 	@Override
@@ -70,6 +68,9 @@ public class ContactAccessorNewApi extends ContactAccessor {
 
 	@Override
 	public Contact[] getContactsFromIds(Context context, String[] ids) {
-		return null;
+		return getContactsSelection(
+				context,
+				Contacts.HAS_PHONE_NUMBER + " = 1 AND " + Contacts._ID + " IN "
+						+ createInClause(ids), null).toArray(new Contact[] {});
 	}
 }
