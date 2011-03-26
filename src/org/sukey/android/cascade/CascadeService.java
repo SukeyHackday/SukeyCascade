@@ -10,8 +10,14 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.Parcelable;
+import android.telephony.SmsManager;
+import android.util.Log;
 
 public class CascadeService extends Service {
+	public static final String ACTION_BROADCAST = "org.sukey.cascade.broadcast_sms";
+	public static final String EXTRA_CONTACTS = "org.sukey.cascade.contacts";
+	public static final String EXTRA_MESSAGE = "org.sukey.cascade.message";
+
 	protected NotificationManager nm;
 	protected Notification notification;
 	protected PendingIntent notificationContentIntent;
@@ -34,7 +40,8 @@ public class CascadeService extends Service {
 
 	protected void updateNotification(int cur, int max) {
 		String title = getResources().getString(R.string.app_name);
-		String text = getResources().getString(R.string.notification_cascading_message,
+		String text = getResources().getString(
+				R.string.notification_cascading_message,
 				new Object[] { (Integer) cur, (Integer) max });
 		notification.setLatestEventInfo(getApplicationContext(), title, text,
 				notificationContentIntent);
@@ -44,37 +51,51 @@ public class CascadeService extends Service {
 
 	protected void handleStart(Intent intent, int startId) {
 		// actually do some work
+		if (!intent.getAction().equals(ACTION_BROADCAST)) {
+			stopSelf();
+			return;
+		}
+		String message = intent.getStringExtra(EXTRA_MESSAGE);
 
-		Parcelable[] p_contacts = intent.getParcelableArrayExtra("org.sukey.cascade.contacts");
+		Parcelable[] p_contacts = intent
+				.getParcelableArrayExtra(EXTRA_CONTACTS);
 		Contact[] contacts = new Contact[p_contacts.length];
-		for (int i=0; i<p_contacts.length; ++i) {
-			contacts[i] = (Contact)p_contacts[i];
+		for (int i = 0; i < p_contacts.length; ++i) {
+			contacts[i] = (Contact) p_contacts[i];
 		}
 
 		nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-		new SendSmsTask().execute(contacts);
+		new SendSmsTask().execute(contacts, message);
 	}
 
 	public static class ProgressMessage {
 		// TODO
 	}
 
-	public class SendSmsTask extends
-			AsyncTask<Contact[], ProgressMessage, Void> {
+	public class SendSmsTask extends AsyncTask<Object, ProgressMessage, Void> {
 
 		@Override
-		protected Void doInBackground(Contact[]... contactArgs) {
-			// TODO work
-			if (contactArgs.length != 1) {
-				throw new IllegalArgumentException("Expecting exactly one argument: an array of contacts");
+		protected Void doInBackground(Object... args) {
+			SmsManager sms = SmsManager.getDefault();
+
+			if (args.length != 2) {
+				throw new IllegalArgumentException(
+						"Expecting exactly two arguments: an array of contacts and a message");
 			}
-			Contact[] contacts = contactArgs[0];
+			Contact[] contacts = (Contact[]) args[0];
+			String message = (String) args[1];
 			int length = contacts.length;
+			Log.d("CascadeService", "Cascading \"" + message + "\" to "
+					+ length + " recipients");
 			for (int i = 0; i < length; ++i) {
-				updateNotification(i+1, length);
+				updateNotification(i + 1, length);
+				Log.d("CascadeService", "Sending message to "
+						+ contacts[i].getNumber());
+				sms.sendTextMessage(contacts[i].getNumber(), null, message,
+						null, null);
 				try {
-					Thread.sleep(7500);
+					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -90,8 +111,10 @@ public class CascadeService extends Service {
 					"Cascading messages", System.currentTimeMillis());
 			notification.flags |= Notification.FLAG_ONGOING_EVENT
 					| Notification.FLAG_NO_CLEAR;
-			Intent intent = new Intent(CascadeService.this, CascadeService.class);
-			notification.contentIntent = notificationContentIntent = PendingIntent.getBroadcast(CascadeService.this, 0, intent, 0);
+			Intent intent = new Intent(CascadeService.this,
+					CascadeService.class);
+			notification.contentIntent = notificationContentIntent = PendingIntent
+					.getBroadcast(CascadeService.this, 0, intent, 0);
 		}
 
 		@Override
