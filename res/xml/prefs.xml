@@ -18,11 +18,6 @@
 			android:dependency="restrict_day" android:defaultValue="0"
 			android:numeric="integer" android:inputType="number" />
 	</PreferenceCategory>
-	<PreferenceCategory android:title="@string/prefgrp_notifications">
-		<CheckBoxPreference android:dependency="enabled"
-			android:summary="@string/prefsumm_confirm_each" android:key="confirm_each"
-			android:title="@string/pref_confirm_each" android:defaultValue="false" />
-	</PreferenceCategory>
 	<Preference android:key="test" android:title="Test service"
 		android:persistent="false" android:selectable="true"
 		android:summary="Send a test message to the service" android:enabled="true"
