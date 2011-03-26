@@ -1,9 +1,12 @@
 package org.sukey.android.cascade;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.sukey.android.cascade.R;
 import org.sukey.android.cascade.helpers.ContactAccessor;
 import org.sukey.android.cascade.helpers.ContactStorage;
 
@@ -17,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.SectionIndexer;
 import android.widget.TextView;
 
 public class SelectContactsActivity extends ListActivity {
@@ -28,6 +32,7 @@ public class SelectContactsActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		getListView().setFastScrollEnabled(true);
 		populateContactsLayout();
 		contactIDs = ContactStorage.getContactIds(this);
 	}
@@ -106,8 +111,12 @@ public class SelectContactsActivity extends ListActivity {
 		}
 	}
 
-	private static class ContactItemArrayAdapter extends ArrayAdapter<Contact> {
+	private static class ContactItemArrayAdapter extends ArrayAdapter<Contact> implements SectionIndexer {
 		private final int resource;
+		private Map<String, Integer> alphaIndexer;
+		private Map<Integer, String> revAlphaIndexer;
+		private List<String> sections;
+		private String[] strSections;
 
 		/**
 		 * 
@@ -120,6 +129,47 @@ public class SelectContactsActivity extends ListActivity {
 				int textViewResourceId, List<Contact> objects) {
 			super(context, resource, textViewResourceId, objects);
 			this.resource = resource;
+			
+			// alphabetical indexing for fastscroller
+			alphaIndexer = new HashMap<String, Integer>();
+			revAlphaIndexer = new HashMap<Integer, String>();
+			int size = objects.size();
+			// store the first letter of the word with its index
+			// identical keys will have their value updated
+			for (int i = size-1; i>= 0; --i) {
+				Contact el = objects.get(i);
+				alphaIndexer.put(el.getName().substring(0, 1).toUpperCase(), i);
+			}
+			
+			// now build the sections (can't sort a Set, annoyingly)
+			sections = new ArrayList<String>(alphaIndexer.keySet());
+			Collections.sort(sections);
+			strSections = new String[sections.size()];
+			sections.toArray(strSections);
+			
+			// now the reverse map
+			for (Map.Entry<String, Integer> e : alphaIndexer.entrySet()) {
+				revAlphaIndexer.put(e.getValue(), e.getKey());
+			}
+		}
+
+		@Override
+		public int getPositionForSection(int section) {
+			return alphaIndexer.get(sections.get(section));
+		}
+
+		@Override
+		public int getSectionForPosition(int position) {
+			int i = position;
+			while (i>0 && !revAlphaIndexer.containsKey(i)) {
+				--i;
+			}
+			return Collections.binarySearch(sections, revAlphaIndexer.get(i));
+		}
+
+		@Override
+		public Object[] getSections() {
+			return strSections;
 		}
 
 		/**
